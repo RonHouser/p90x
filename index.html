@@ -63,7 +63,17 @@ input,select,textarea{font:inherit}
    linear-gradient(115deg,transparent 62%,rgba(215,25,32,.16) 62%,rgba(215,25,32,.16) 66%,transparent 66%,transparent 70%,rgba(215,25,32,.08) 70%,rgba(215,25,32,.08) 72%,transparent 72%),
    repeating-linear-gradient(90deg,rgba(255,255,255,.02) 0 1px,transparent 1px 4px),
    linear-gradient(180deg,#202020,#0f0f0f)}
-.focus .in{padding:16px 16px 14px}
+.focus .in{position:relative;z-index:1;padding:16px 16px 14px}
+.focus .bg{position:absolute;inset:0;background-size:cover;background-position:70% 18%;background-repeat:no-repeat;opacity:0;transition:opacity .35s ease}
+.focus .bg.on{opacity:1}
+.focus .bg::after{content:"";position:absolute;inset:0;background:
+  linear-gradient(90deg,rgba(0,0,0,.88) 0%,rgba(0,0,0,.62) 42%,rgba(0,0,0,.18) 100%),
+  linear-gradient(0deg,rgba(0,0,0,.75) 0%,rgba(0,0,0,0) 45%)}
+.lhead{overflow:hidden}
+.lhead .hbg{position:absolute;inset:0;background-size:cover;background-position:72% 35%;opacity:0;transition:opacity .35s ease}
+.lhead .hbg.on{opacity:.38}
+.lhead .hbg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#000 0%,rgba(0,0,0,.6) 55%,rgba(0,0,0,.2) 100%)}
+.lhead .in{position:relative;z-index:1}
 .eyebrow{font-family:var(--disp);font-size:12px;letter-spacing:.18em;color:var(--mut);text-transform:uppercase}
 .tag{display:inline-block;text-transform:uppercase;font-family:var(--disp);font-size:11px;letter-spacing:.16em;padding:3px 8px;background:var(--red);color:#fff;border-radius:2px;transform:skewX(-9deg);margin-right:8px}
 .tag.gray{background:#333}.tag.green{background:#1d7a3e}
@@ -468,6 +478,17 @@ const ICON = {
   tape: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="12" r="6.5"/><circle cx="9.5" cy="12" r="2"/><path d="M9.5 18.5H21v-4"/><path d="M13 18.5v-2M16 18.5v-2M19 18.5v-2"/></svg>'
 };
 const MEAS = [['chest', 'Chest', 'in'], ['waist', 'Waist', 'in'], ['hips', 'Hips', 'in'], ['arm', 'Arm (flexed)', 'in'], ['thigh', 'Thigh', 'in'], ['bf', 'Body fat', '%']];
+// Background art (original images in /img). If a file is missing, the card keeps its red-stripe design.
+const IMG = { CB: 'cb', PLYO: 'plyo', SA: 'sa', YOGA: 'yoga', LB: 'lb', KENPO: 'kenpo', XS: 'xs', XSR: 'xs', CORE: 'core', CST: 'cst', BB: 'bb' };
+function imgFor(main, log) { const n = main === 'XSR' && log && log.choice === 'rest' ? 'rest' : IMG[main]; return n ? `img/${n}.jpg` : ''; }
+function bgLayer(cls, src) { return src ? `<div class="${cls}" data-bg="${src}" aria-hidden="true"></div>` : ''; }
+function loadBgs() {
+  $$('[data-bg]').forEach(el => {
+    const src = el.dataset.bg, im = new Image();
+    im.onload = () => { el.style.backgroundImage = `url("${src}")`; el.classList.add('on'); };
+    im.src = src;
+  });
+}
 const app = $('#app');
 let curRoute = '';
 function readHash() { try { return decodeURIComponent((location.hash || '').slice(1)); } catch (e) { return ''; } }
@@ -641,7 +662,7 @@ function renderHome() {
     </div>
   </div></div>
   <div class="wrap">
-    <section class="focus" aria-label="Today's workout"><div class="in">
+    <section class="focus" aria-label="Today's workout">${bgLayer('bg', imgFor(fd.main, fl))}<div class="in">
       <div><span class="tag ${tagCls}">${esc(tag)}</span><span class="eyebrow">Week ${fd.week} · Day ${fd.idx + 1} · Phase ${fd.phase}${fd.rec ? ' · Recovery' : ''}</span></div>
       <h2>${esc(name)}</h2>
       ${fd.arx ? '<div class="plus">+ Ab Ripper X</div>' : ''}
@@ -664,6 +685,7 @@ function renderHome() {
     ${cal}
     <div class="foot">Tap any day to log it · Unofficial personal tracker<br>Data lives on this device — back it up from your profile.</div>
   </div>`;
+  loadBgs();
   window.scrollTo(0, 0);
 }
 
@@ -741,7 +763,7 @@ function renderLog(date) {
 
   const restMode = wk.choice && choice === 'rest';
   app.innerHTML = `
-  <div class="lhead"><div class="in">
+  <div class="lhead">${bgLayer('hbg', imgFor(day.main, log))}<div class="in">
     <button type="button" class="back" data-nav="home" aria-label="Home">${ICON.home}</button>
     <div class="lt"><div class="eyebrow">Week ${day.week} · Day ${day.idx + 1} · Phase ${day.phase}${day.rec ? ' · Recovery' : ''}</div>
       <h1>${esc(title)}${day.arx ? ' <span style="color:var(--red)">+ARX</span>' : ''}</h1></div>
@@ -765,6 +787,7 @@ function renderLog(date) {
       ${log ? '<button type="button" class="link" data-act="clear">Clear this day</button>' : '<span></span>'}
     </div>
   </div>`;
+  loadBgs();
   window.scrollTo(0, 0);
   $$('.row[data-row]').forEach(updateDelta);
   updateSummary();

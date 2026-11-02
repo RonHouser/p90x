@@ -1,6 +1,8 @@
-// Offline support: network-first, falls back to cache (so it works at the gym with no signal)
-const C = 'p90x-tracker-v1';
-const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+// Offline support: network-first (updates show up automatically), falls back to the saved copy with no signal.
+const C = 'p90x-tracker-v2';
+const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png',
+  './img/cb.jpg', './img/plyo.jpg', './img/sa.jpg', './img/yoga.jpg', './img/lb.jpg', './img/kenpo.jpg',
+  './img/xs.jpg', './img/rest.jpg', './img/core.jpg', './img/cst.jpg', './img/bb.jpg'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(C).then(c => Promise.all(FILES.map(f => c.add(f).catch(() => {})))));
   self.skipWaiting();
