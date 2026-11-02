@@ -74,6 +74,20 @@ input,select,textarea{font:inherit}
 .lhead .hbg.on{opacity:.38}
 .lhead .hbg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#000 0%,rgba(0,0,0,.6) 55%,rgba(0,0,0,.2) 100%)}
 .lhead .in{position:relative;z-index:1}
+/* ---------- INSTALL BANNER ---------- */
+.inst{position:relative;margin:14px 0 4px;border:1px solid var(--line2);border-left:4px solid var(--red);border-radius:6px;background:linear-gradient(180deg,#1c1c1c,#111);padding:12px 40px 12px 12px;display:flex;gap:12px;align-items:center}
+.inst img{width:48px;height:48px;border-radius:11px;flex:none;box-shadow:0 2px 8px rgba(0,0,0,.6)}
+.inst .t{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:.04em;text-transform:uppercase;line-height:1.1}
+.inst .d{font-size:12.5px;color:#bdbdbd;line-height:1.4;margin-top:3px}
+.inst .x{position:absolute;top:6px;right:6px;width:30px;height:30px;border:0;background:none;color:#888;font-size:16px;border-radius:4px}
+.inst .go{flex:none;border:0;border-radius:4px;height:40px;padding:0 14px;background:linear-gradient(180deg,#ff2b22,#d71920 45%,#9e0f14);color:#fff;font-family:var(--disp);font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:14px}
+.inst .main{flex:1;min-width:0}
+.steps{margin:8px 0 0;padding:0;list-style:none;counter-reset:st;display:grid;gap:6px}
+.steps li{counter-increment:st;display:flex;align-items:center;gap:8px;font-size:13px;color:#ddd;line-height:1.35}
+.steps li::before{content:counter(st);flex:none;width:20px;height:20px;border-radius:50%;background:var(--red);color:#fff;font-family:var(--disp);font-size:12px;display:grid;place-items:center}
+.steps svg{width:17px;height:17px;vertical-align:-3px;margin:0 2px;color:#fff}
+.steps b{color:#fff}
+.inst .note{font-size:11.5px;color:var(--mut);margin-top:8px;line-height:1.4}
 .eyebrow{font-family:var(--disp);font-size:12px;letter-spacing:.18em;color:var(--mut);text-transform:uppercase}
 .tag{display:inline-block;text-transform:uppercase;font-family:var(--disp);font-size:11px;letter-spacing:.16em;padding:3px 8px;background:var(--red);color:#fff;border-radius:2px;transform:skewX(-9deg);margin-right:8px}
 .tag.gray{background:#333}.tag.green{background:#1d7a3e}
@@ -478,7 +492,7 @@ const ICON = {
   tape: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9.5" cy="12" r="6.5"/><circle cx="9.5" cy="12" r="2"/><path d="M9.5 18.5H21v-4"/><path d="M13 18.5v-2M16 18.5v-2M19 18.5v-2"/></svg>'
 };
 const MEAS = [['chest', 'Chest', 'in'], ['waist', 'Waist', 'in'], ['hips', 'Hips', 'in'], ['arm', 'Arm (flexed)', 'in'], ['thigh', 'Thigh', 'in'], ['bf', 'Body fat', '%']];
-// Background art (original images in /img). If a file is missing, the card keeps its red-stripe design.
+// Background art (images in /img). If a file is missing, the card keeps its red-stripe design.
 const IMG = { CB: 'cb', PLYO: 'plyo', SA: 'sa', YOGA: 'yoga', LB: 'lb', KENPO: 'kenpo', XS: 'xs', XSR: 'xs', CORE: 'core', CST: 'cst', BB: 'bb' };
 function imgFor(main, log) { const n = main === 'XSR' && log && log.choice === 'rest' ? 'rest' : IMG[main]; return n ? `img/${n}.jpg` : ''; }
 function bgLayer(cls, src) { return src ? `<div class="${cls}" data-bg="${src}" aria-hidden="true"></div>` : ''; }
@@ -489,6 +503,42 @@ function loadBgs() {
     im.src = src;
   });
 }
+
+/* ---------- INSTALL BANNER ---------- */
+const INST_KEY = 'p90x_install_dismissed';
+let deferredPrompt = null;
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isIOSChrome = () => /CriOS|EdgiOS|FxiOS/i.test(navigator.userAgent);
+function instDismissed() { try { return localStorage.getItem(INST_KEY) === '1'; } catch (e) { return false; } }
+const SHARE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>';
+const PLUS_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
+function installHTML() {
+  if (isStandalone() || instDismissed() || location.protocol === 'file:') return '';
+  const close = '<button type="button" class="x" data-act="instclose" aria-label="Dismiss">✕</button>';
+  if (deferredPrompt) {
+    return `<div class="inst" role="region" aria-label="Install app">${close}<img src="icon-192.png" alt="">
+      <div class="main"><div class="t">Install P90X</div><div class="d">Add it to your home screen. Full screen, works offline.</div></div>
+      <button type="button" class="go" data-act="install">Install</button></div>`;
+  }
+  if (isIOS()) {
+    const where = isIOSChrome() ? 'in the address bar (or <b>⋯</b> → Share)' : 'at the bottom of Safari';
+    return `<div class="inst" role="region" aria-label="Add to home screen" style="align-items:flex-start">${close}<img src="apple-touch-icon.png" alt="">
+      <div class="main"><div class="t">Add P90X to your home screen</div>
+        <ol class="steps">
+          <li><span>Tap <b>Share</b> ${SHARE_SVG} ${where}</span></li>
+          <li><span>Tap <b>Add to Home Screen</b> ${PLUS_SVG}</span></li>
+          <li><span>Keep <b>Open as Web App</b> on, then tap <b>Add</b></span></li>
+        </ol>
+        <div class="note">Then open P90X from the new icon and create your profile there. The home-screen app keeps its own data.</div>
+      </div></div>`;
+  }
+  return '';
+}
+function refreshInstall() { $$('[data-inst-slot]').forEach(el => { el.innerHTML = installHTML(); }); }
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; refreshInstall(); });
+window.addEventListener('appinstalled', () => { deferredPrompt = null; refreshInstall(); toast('Installed. Open P90X from your home screen'); });
+
 const app = $('#app');
 let curRoute = '';
 function readHash() { try { return decodeURIComponent((location.hash || '').slice(1)); } catch (e) { return ''; } }
@@ -525,6 +575,7 @@ function renderSetup(edit) {
       <div class="sub">Extreme Home Fitness Tracker</div>
       ${edit ? '' : '<div class="bring">90 DAYS. <em>BRING IT.</em></div>'}
     </div>
+    ${edit ? '' : `<div data-inst-slot>${installHTML()}</div>`}
 
     ${!edit && others.length ? `
       <div class="card"><h4>Welcome back</h4><div class="plist">
@@ -662,6 +713,7 @@ function renderHome() {
     </div>
   </div></div>
   <div class="wrap">
+    <div data-inst-slot>${installHTML()}</div>
     <section class="focus" aria-label="Today's workout">${bgLayer('bg', imgFor(fd.main, fl))}<div class="in">
       <div><span class="tag ${tagCls}">${esc(tag)}</span><span class="eyebrow">Week ${fd.week} · Day ${fd.idx + 1} · Phase ${fd.phase}${fd.rec ? ' · Recovery' : ''}</span></div>
       <h2>${esc(name)}</h2>
@@ -1002,6 +1054,14 @@ document.addEventListener('click', e => {
       if (el) window.scrollTo({ top: el.getBoundingClientRect().top + scrollY - 110, behavior: 'smooth' });
       break;
     }
+    case 'install': {
+      if (!deferredPrompt) break;
+      const dp = deferredPrompt; deferredPrompt = null;
+      dp.prompt();
+      (dp.userChoice || Promise.resolve({})).then(() => refreshInstall()).catch(() => {});
+      break;
+    }
+    case 'instclose': try { localStorage.setItem(INST_KEY, '1'); } catch (e) {} refreshInstall(); break;
     case 'weightui': openWeight(); break;
     case 'measui': openMeas(); break;
     case 'weigh': {
