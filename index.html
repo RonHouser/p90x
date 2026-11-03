@@ -322,6 +322,9 @@ const CB_LIST = [
   E('Wide Fly Push-Ups'), E('Closed Grip Overhand Pull-Ups'), E('Decline Push-Ups'), E('Heavy Pants', 'w'),
   E('Diamond Push-Ups'), E('Lawnmowers', 'w'), E('Dive-Bomber Push-Ups'), E('Back Flys', 'w')
 ];
+// Round 2 swaps each push/pull pair so the pull comes first (official worksheet #13-24)
+const CB_ROUND2 = [];
+for (let i = 0; i < CB_LIST.length; i += 2) CB_ROUND2.push(CB_LIST[i + 1], CB_LIST[i]);
 const SA_CIRCUITS = [
   [E('Alternating Shoulder Press', 'w'), E('In & Out Bicep Curls', 'w'), E('Two-Arm Tricep Kickbacks', 'w')],
   [E("Deep Swimmer's Presses", 'w'), E('Full Supination Concentration Curls', 'w'), E('Chair Dips')],
@@ -354,10 +357,16 @@ const BB_LIST = [
   E('Max Rep Pull-Ups'), E('Superman'), E('In & Out Hammer Curls', 'w'), E('Strip-Set Curls', 'w')
 ];
 const CORE_LIST = [
-  E('Stacked Foot / Staggered Hands Push-Ups'), E('Banana Roll'), E('Leaning Crescent Lunges'), E('Squat Run'),
-  E('Sphinx Push-Ups'), E('Bow to Bow'), E('Low Lateral Skate'), E('Lunge & Reach', 'w'),
-  E('Prison Cell Get-Ups'), E('Bow to Boat'), E('Plank to Chaturanga Run'), E('Walking Push-Ups'),
-  E('Squat X Press', 'w'), E('Dreya Roll')
+  { h: 'Round 1' },
+  E('Stacked Foot / Staggered Hands Push-Ups'), E('Banana Rolls'), E('Leaning Crescent Lunges'), E('Squat Runs'),
+  E('Sphinx Push-Ups'), E('Bow to Boat'), E('Low Lateral Skaters'), E('Lunge & Reach', 'w'),
+  { h: 'Round 2' },
+  E('Prison Cell Push-Ups'), E('Side Hip Raises'), E('Squat X Press', 'w'), E('Plank to Chaturanga Run'),
+  E('Walking Push-Ups'), E('Superman / Banana'), E('Lunge Kickback Curl Press', 'w'), E('Towel Hoppers'),
+  { h: 'Round 3' },
+  E('Reach High & Under Push-Ups'), E('Steam Engines'), E('Dreya Rolls'),
+  { h: 'Bonus Round', x: 'optional' },
+  E('Plank to Chaturanga'), E('Halfbacks'), E('Table Dip Leg Raises')
 ];
 const ARX_LIST = [
   E('In & Outs'), E('Bicycles'), E('Reverse Bicycles'), E('Crunchy Frog'), E('Wide Leg Sit-Ups'), E('Fifer Scissors'),
@@ -377,7 +386,7 @@ SA_CIRCUITS.forEach((cir, i) => { saItems.push({ h: `Circuit ${i + 1}`, x: '2 ro
 
 // Approximate DVD run times (min), incl. warm-up & cool-down
 const W = {
-  CB:    { name: 'Chest & Back', cell: 'Chest & Back', min: 53, kind: 'lift', items: keyed([{ h: 'Round 1' }, ...CB_LIST, { h: 'Round 2', x: 'repeat' }, ...CB_LIST]), roundHdr: true },
+  CB:    { name: 'Chest & Back', cell: 'Chest & Back', min: 53, kind: 'lift', items: keyed([{ h: 'Round 1' }, ...CB_LIST, { h: 'Round 2', x: 'pull first' }, ...CB_ROUND2]), roundHdr: true },
   PLYO:  { name: 'Plyometrics', cell: 'Plyo', min: 59, kind: 'cardio' },
   SA:    { name: 'Shoulders & Arms', cell: 'Shldrs & Arms', min: 60, kind: 'lift', items: keyed(saItems) },
   YOGA:  { name: 'Yoga X', cell: 'Yoga X', min: 92, kind: 'flex' },
